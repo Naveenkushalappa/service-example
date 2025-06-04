@@ -5,9 +5,7 @@ export async function dataEntitiesHandler(ctx: Context) {
         const { clients } = ctx
 
         const { start, end } = ctx.request.query
-        console.log(start, end, "Start and end")
-        ctx.body = await clients.dataEntities.getDataEntities(start, end)
-
+        ctx.body = await clients.dataEntities.getDataEntitiesWithHeaders(start, end)
         ctx.status = 200
     } catch (error) {
         console.error('Error in dataEntitiesHandler:', error)
