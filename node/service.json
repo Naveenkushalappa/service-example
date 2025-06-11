@@ -17,6 +17,10 @@
     "dataEntities": {
       "path": "/_v/dataEntities",
       "public": true
+    },
+    "uploadFile": {
+      "path": "/_v/uploadFile",
+      "public": true
     }
   }
 }

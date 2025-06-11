@@ -6,7 +6,9 @@ import { status } from './middlewares/status'
 import { validate } from './middlewares/validate'
 import { testHandler } from './handlers/testHandler'
 import { dataEntitiesHandler } from './handlers/dataEntitiesHandler'
+import { uploadFileHandler } from './handlers/uploadFileHandler'
 
+import koaBody from 'koa-body'
 const TIMEOUT_MS = 800
 
 // Create a LRU memory cache for the Status client.
@@ -46,6 +48,16 @@ declare global {
   }
 }
 
+const uploadWithKoaBody = async (ctx: any, next: () => Promise<any>) => {
+  return koaBody({ 
+    multipart: true,
+    formidable: {
+      maxFileSize: 50 * 1024 * 1024,
+      keepExtensions: true,
+    }
+  })(ctx, next)
+}
+
 // Export a service that defines route handlers and client options.
 export default new Service({
   clients,
@@ -59,6 +71,9 @@ export default new Service({
     }),
     dataEntities: method({
       GET: [dataEntitiesHandler],
+    }), 
+    uploadFile: method({
+      POST: [uploadWithKoaBody, uploadFileHandler],
     }),
   },
 })
