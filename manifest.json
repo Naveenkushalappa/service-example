@@ -20,6 +20,13 @@
       "name": "outbound-access",
       "attrs": {
         "host": "httpstat.us",
+        "path": "trika"
+      }
+    },
+    {
+      "name": "outbound-access",
+      "attrs": {
+        "host": "api.io.vtex.com",
         "path": "*"
       }
     },
