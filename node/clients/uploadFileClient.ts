@@ -1,6 +1,7 @@
 import { IOClient, IOContext, InstanceOptions, IOResponse } from '@vtex/api'
 import { VTEX_APP_KEY, VTEX_APP_TOKEN } from '../config'
-import * as fs from 'fs'
+import fs from 'fs'
+import FormData from 'form-data'
 
 export default class UploadFile extends IOClient {
   constructor(context: IOContext, options?: InstanceOptions) {
@@ -8,7 +9,7 @@ export default class UploadFile extends IOClient {
   }
 
   public async uploadFileWithHeaders(
-    file: string | Blob,
+    file: any,
     documentId: string
   ): Promise<IOResponse<string>> {
     const headers = {
@@ -16,27 +17,30 @@ export default class UploadFile extends IOClient {
       'X-VTEX-API-AppKey': VTEX_APP_KEY,
       'X-VTEX-API-AppToken': VTEX_APP_TOKEN,
       'X-VTEX-Use-Https': 'true',
-      'Content-Type': 'multipart/form-data'
     }
 
     try {
-      let fileBuffer: Buffer
-      if (typeof file === 'string') {
-        // If file is a path string
-        fileBuffer = fs.readFileSync(file)
-      } else if (file instanceof Blob) {
-        // If file is a Blob, convert to Buffer
-        const arrayBuffer = await file.arrayBuffer()
-        fileBuffer = Buffer.from(arrayBuffer)
+      let formData = new FormData()
+
+      if (file?.filepath && file?.originalFilename && file?.mimetype) {
+        const stream = fs.createReadStream(file.filepath)
+        formData.append('file', stream, {
+          filename: file.originalFilename,
+          contentType: file.mimetype,
+        })
       } else {
-        throw new Error('Invalid file type')
+        throw new Error('Invalid file object from Koa')
       }
+
 
       const response = await this.http.postRaw(
         `/api/dataentities/NC/documents/${documentId}/fileLink/attachments`,
-        fileBuffer,
+        formData,
         {
-          headers,
+          headers: {
+            ...headers,
+            ...formData.getHeaders(), 
+          },
           timeout: 30000
         }
       )
