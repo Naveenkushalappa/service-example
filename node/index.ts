@@ -4,7 +4,11 @@ import { LRUCache, method, Service } from '@vtex/api'
 import { Clients } from './clients'
 import { status } from './middlewares/status'
 import { validate } from './middlewares/validate'
+import { testHandler } from './handlers/testHandler'
+import { dataEntitiesHandler } from './handlers/dataEntitiesHandler'
+import { uploadFileHandler } from './handlers/uploadFileHandler'
 
+import koaBody from 'koa-body'
 const TIMEOUT_MS = 800
 
 // Create a LRU memory cache for the Status client.
@@ -15,7 +19,7 @@ const TIMEOUT_MS = 800
 // To force responses to be cached, consider adding the `forceMaxAge` option to your client methods.
 const memoryCache = new LRUCache<string, any>({ max: 5000 })
 
-metrics.trackCache('status', memoryCache)
+// metrics.trackCache('status', memoryCache)
 
 // This is the configuration for clients available in `ctx.clients`.
 const clients: ClientsConfig<Clients> = {
@@ -44,6 +48,16 @@ declare global {
   }
 }
 
+const uploadWithKoaBody = async (ctx: any, next: () => Promise<any>) => {
+  return koaBody({ 
+    multipart: true,
+    formidable: {
+      maxFileSize: 50 * 1024 * 1024,
+      keepExtensions: true,
+    }
+  })(ctx, next)
+}
+
 // Export a service that defines route handlers and client options.
 export default new Service({
   clients,
@@ -51,6 +65,15 @@ export default new Service({
     // `status` is the route ID from service.json. It maps to an array of middlewares (or a single handler).
     status: method({
       GET: [validate, status],
+    }),
+    test: method({
+      GET: [testHandler],
+    }),
+    dataEntities: method({
+      GET: [dataEntitiesHandler],
+    }), 
+    uploadFile: method({
+      POST: [uploadWithKoaBody, uploadFileHandler],
     }),
   },
 })

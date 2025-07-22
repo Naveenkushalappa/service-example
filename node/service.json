@@ -9,6 +9,18 @@
     "status": {
       "path": "/_v/status/:code",
       "public": true
+    },
+    "test": {
+      "path": "/_v/test",
+      "public": true
+    },
+    "dataEntities": {
+      "path": "/_v/dataEntities",
+      "public": true
+    },
+    "uploadFile": {
+      "path": "/_v/uploadFile",
+      "public": true
     }
   }
 }
